@@ -115,9 +115,19 @@ class Army {
 
 public class Main {
 public static void main(String[] args) {
-    
+    Codex codex = new Codex();
+        Army myArmy = new Army();
+
+        // Add units to the army
+        myArmy.addUnit(codex.getUnits().get(0)); // Marine
+        myArmy.addUnit(codex.getUnits().get(2)); // Terminator
+
+        // Display the army and its stats
+        System.out.println(myArmy);
+        System.out.println("Total Points: " + myArmy.calculateTotalPoints());
+        System.out.println("Total Effectiveness: " + myArmy.calculateTotalEffectiveness());
+    }
 
     
     
 }    
-}
