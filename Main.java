@@ -105,7 +105,7 @@ class Army {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("Army:\n");
+        StringBuilder sb = new StringBuilder("Units:\n");
         for (Unit unit : selectedUnits) {
             sb.append(unit).append("\n");
         }
@@ -121,7 +121,7 @@ class ArmyOptimizer {
         int n = codex.size();
         int[][] dp = new int[n + 1][maxPoints + 1];
 
-        // Fill DP table
+        // Fill table.
         for (int i = 1; i <= n; i++) {
             Unit unit = codex.get(i - 1);
             for (int points = 0; points <= maxPoints; points++) {
@@ -160,6 +160,81 @@ class ArmyOptimizer {
 
 
 
+class UnitCombat {
+    
+    // Simulate combat between two units at a given distance
+    public static String Combat(Unit A, Unit B, int distance) {
+        
+        // Compares the effectiveness based on how distance affects shooting vs. close combat
+        int effectivenessA = A.calculateEffectiveness();
+        int effectivenessB = B.calculateEffectiveness();
+
+        if (distance > 5) {
+            
+            // Assume shooting combat at a distance
+            effectivenessA *= A.shootingAccuracy;
+            effectivenessB *= B.shootingAccuracy;
+        } 
+        else {
+            
+            // Assume close combat at short distance
+            effectivenessA *= A.closeCombatAccuracy;
+            effectivenessB *= B.closeCombatAccuracy;
+        }
+
+        if (effectivenessA > effectivenessB) {
+            return A.name + " wins";
+        } else if (effectivenessB > effectivenessA) {
+            return B.name + " wins";
+        } else {
+            return "Draw";
+        }
+    }
+}
+
+
+
+
+class Battlefield {
+    String size; // "small", "large"
+    int objectives;
+
+    public Battlefield(String size, int objectives) {
+        this.size = size;
+        this.objectives = objectives;
+    }
+
+    // Determine if the battlefield is large or small
+    public boolean isLarge() {
+        return this.size.equals("large");
+    }
+
+    @Override
+    public String toString() {
+        return "Battlefield [Size: " + size + ", Objectives: " + objectives + "]";
+    }
+}
+
+
+class BattleSimulator {
+
+    // Function to simulate a battle between two armies on a given battlefield
+    public static String Battle(Army armyA, Army armyB, Battlefield battlefield) {
+        
+        int armyAEffectiveness = armyA.calculateTotalEffectiveness();
+        int armyBEffectiveness = armyB.calculateTotalEffectiveness();
+
+       
+        // The army with the highest effectiveness wins
+        if (armyAEffectiveness > armyBEffectiveness) {
+            return "Army A wins!";
+        } else if (armyBEffectiveness > armyAEffectiveness) {
+            return "Army B wins!";
+        } else {
+            return "It's a draw!";
+        }
+    }
+}
 
 
 
@@ -169,6 +244,40 @@ class ArmyOptimizer {
 public class Main {
 public static void main(String[] args) {
     Codex codex = new Codex();
+        
+    Army armyA = new Army();
+    Army armyB = new Army();
+    
+    // Add units to the armies.
+    armyA.addUnit(codex.getUnits().get(0)); // Marine
+    armyA.addUnit(codex.getUnits().get(2)); // Terminator  
+    armyB.addUnit(codex.getUnits().get(1)); // Assault Marine
+    armyB.addUnit(codex.getUnits().get(3)); // Scout 
+    
+    // Output both armies and their stats.
+    System.out.println("Army A:\n");
+    System.out.println(armyA);
+    System.out.println("Total Points: " + armyA.calculateTotalPoints());
+    System.out.println("Total Effectiveness: " + armyA.calculateTotalEffectiveness());
+    
+    System.out.println("\nArmy B:\n");
+    System.out.println(armyB);
+    System.out.println("Total Points: " + armyB.calculateTotalPoints());
+    System.out.println("Total Effectiveness: " + armyB.calculateTotalEffectiveness());
+    
+    // Test the ArmyOptimizer for a maximum point budget
+    int maxPoints = 150;
+    Army optimalArmy = ArmyOptimizer.buildOptimalArmy(codex.getUnits(), maxPoints);
+    
+    
+    // Simulate the battle between Army A and Army B.
+    Battlefield battlefield = new Battlefield("small", 3); // Small battlefield with 3 objectives
+    String battleResult = BattleSimulator.Battle(armyA, armyB, battlefield);
+    System.out.println("\nBattle Result: " + battleResult);
+    
+    
+    
+        /*
         Army myArmy = new Army();
 
         // Add units to the army.
@@ -189,10 +298,10 @@ public static void main(String[] args) {
         System.out.println(optimalArmy);
         System.out.println("Total Points: " + optimalArmy.calculateTotalPoints());
         System.out.println("Total Effectiveness: " + optimalArmy.calculateTotalEffectiveness());
+        */
+        
+        
         
         
     }
-
-    
-    
 }    
