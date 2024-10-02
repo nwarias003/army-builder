@@ -63,10 +63,19 @@ class Codex {
         units = new ArrayList<>();
         
         // Sample units
-        units.add(new Unit("Marine", 6, 10, 0.9, 0.85, 18, 0.75, 12, 80));
-        units.add(new Unit("Assault Marine", 7, 8, 0.85, 0.8, 16, 0.8, 14, 90));
-        units.add(new Unit("Terminator", 5, 12, 0.95, 0.9, 20, 0.7, 18, 120));
-        units.add(new Unit("Scout", 8, 6, 0.7, 0.65, 12, 0.6, 10, 60));
+        units.add(new Unit("Spartan", 8, 12, 0.95, 0.9, 20, 0.85, 15, 150));
+        units.add(new Unit("Elite", 7, 10, 0.9, 0.85, 18, 0.8, 14, 130));
+        units.add(new Unit("Grunt", 5, 5, 0.6, 0.5, 8, 0.4, 6, 40));
+        units.add(new Unit("Jackal", 6, 6, 0.7, 0.65, 10, 0.6, 8, 50));
+        units.add(new Unit("Hunter", 4, 20, 0.95, 0.7, 25, 0.9, 30, 200));
+        units.add(new Unit("ODST", 7, 9, 0.85, 0.85, 16, 0.75, 12, 100));
+        units.add(new Unit("Brute", 6, 14, 0.8, 0.75, 22, 0.85, 20, 160));
+        units.add(new Unit("Warthog", 10, 12, 0.9, 0.6, 15, 0.6, 10, 120));
+        units.add(new Unit("Ghost", 12, 8, 0.85, 0.8, 18, 0.5, 8, 100));
+        units.add(new Unit("Banshee", 14, 10, 0.85, 0.9, 20, 0.6, 12, 180));
+        units.add(new Unit("Marine", 6, 7, 0.75, 0.7, 10, 0.5, 8, 60));     // Marines: Standard infantry
+        units.add(new Unit("Scorpion", 8, 25, 0.95, 0.5, 40, 0.85, 25, 300)); // Scorpion: Heavy tank
+        units.add(new Unit("Mongoose", 15, 6, 0.8, 0.3, 5, 0.2, 5, 70));    // Mongoose: Fast scout vehicle
     }
 
     public List<Unit> getUnits() {
@@ -249,10 +258,23 @@ public static void main(String[] args) {
     Army armyB = new Army();
     
     // Add units to the armies.
+    armyA.addUnit(codex.getUnits().get(0)); // Spartan
+    armyA.addUnit(codex.getUnits().get(2)); // Grunt
+    armyA.addUnit(codex.getUnits().get(4)); // Hunter
+    
+    armyB.addUnit(codex.getUnits().get(1)); // Elite
+    armyB.addUnit(codex.getUnits().get(3)); // Jackal
+    armyB.addUnit(codex.getUnits().get(5)); // ODST
+   
+   
+   
+   
+    /*
     armyA.addUnit(codex.getUnits().get(0)); // Marine
     armyA.addUnit(codex.getUnits().get(2)); // Terminator  
     armyB.addUnit(codex.getUnits().get(1)); // Assault Marine
     armyB.addUnit(codex.getUnits().get(3)); // Scout 
+    */
     
     // Output both armies and their stats.
     System.out.println("Army A:\n");
