@@ -124,6 +124,26 @@ class Army {
 
 class ArmyOptimizer {
 
+    private Army army;
+    private int maxPoints;
+
+    // Constructor
+    public ArmyOptimizer(Army army, int maxPoints) {
+        this.army = army;
+        this.maxPoints = maxPoints;
+    }
+
+    // Method to optimize the army
+    public Army optimize() {
+        // Retrieve the codex (available units) from the army.
+        List<Unit> codex = new ArrayList<>(army.selectedUnits);
+        
+        // Use the buildOptimalArmy method to get the optimized army.
+        return buildOptimalArmy(codex, maxPoints);
+    }
+    
+    
+    
     // Method to select the optimal army using dynamic programming
     public static Army buildOptimalArmy(List<Unit> codex, int maxPoints) {
 
@@ -287,14 +307,37 @@ public static void main(String[] args) {
     System.out.println("Total Points: " + armyB.calculateTotalPoints());
     System.out.println("Total Effectiveness: " + armyB.calculateTotalEffectiveness());
     
+    System.out.println("-----------------------------------------------------------------------------------");
+   
     // Test the ArmyOptimizer for a maximum point budget
-    int maxPoints = 150;
-    Army optimalArmy = ArmyOptimizer.buildOptimalArmy(codex.getUnits(), maxPoints);
+    int maxPointsA = 150;
+    int maxPointsB = 150;
     
+    
+    // Optimize Army A and Army B
+    ArmyOptimizer optimizerA = new ArmyOptimizer(armyA, maxPointsA);
+    Army optimizedArmyA = optimizerA.optimize();
+
+    ArmyOptimizer optimizerB = new ArmyOptimizer(armyB, maxPointsB);
+    Army optimizedArmyB = optimizerB.optimize();
+    
+   
+    
+    // Display the optimized armies and its stats
+    System.out.println("\nOptimized Army A (Max Points: " + maxPointsA + "):");
+    System.out.println(optimizedArmyA);
+    System.out.println("Total Points: " + optimizedArmyA.calculateTotalPoints());
+    System.out.println("Total Effectiveness: " + optimizedArmyA.calculateTotalEffectiveness());
+
+    System.out.println("\nOptimized Army B (Max Points: " + maxPointsB + "):");
+    System.out.println(optimizedArmyB);
+    System.out.println("Total Points: " + optimizedArmyB.calculateTotalPoints());
+    System.out.println("Total Effectiveness: " + optimizedArmyB.calculateTotalEffectiveness());
+
     
     // Simulate the battle between Army A and Army B.
     Battlefield battlefield = new Battlefield("small", 3); // Small battlefield with 3 objectives
-    String battleResult = BattleSimulator.Battle(armyA, armyB, battlefield);
+    String battleResult = BattleSimulator.Battle(optimizedArmyA, optimizedArmyB, battlefield);
     System.out.println("\nBattle Result: " + battleResult);
     
     
