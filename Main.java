@@ -8,8 +8,14 @@
 import java.util.ArrayList;
 import java.util.List;
 
+ 
+ /**
+ * Class that represents a unit in the army.
+ */
  class Unit {
     
+    // Declares the unit's properties of its name speed, wounds, armor, shooting accuracy, shooting damage, 
+    // close combat accuracy, close combat damage, and point cost.
     String name;
     int speed;
     int wounds;
@@ -20,7 +26,9 @@ import java.util.List;
     int closeCombatDamage;
     int pointCost;
 
-    // Constructor
+    // Initializes a new unit with its attributes: name, speed, wounds, armor, shooting accuracy, 
+    // shooting damage, close combat accuracy, close combat damage, and point cost.
+    // Each attribute is set using the values provided as parameters when creating the unit.
     public Unit(String name, int speed, int wounds, double armor, double shootingAccuracy, int shootingDamage,
                 double closeCombatAccuracy, int closeCombatDamage, int pointCost) {
         
@@ -35,14 +43,15 @@ import java.util.List;
         this.pointCost = pointCost;
     }
 
-    // Method to calculate unit's effectiveness.
+    // Calculates the overall effectiveness of a unit based on its stats.
     public int calculateEffectiveness() {
         
-        // Effectiveness can be calculated differently based on your game rules
+        // Calculates effectiveness by combinding the stats for wounds, damage, and accuracy. 
         return (int) (this.wounds * this.shootingDamage * this.shootingAccuracy + 
                       this.closeCombatDamage * this.closeCombatAccuracy);
     }
 
+    // Prints the unit's details in an orgainized format.
     @Override
     public String toString() {
         
@@ -54,15 +63,21 @@ import java.util.List;
 }
 
 
+/**
+ * Represents a Codex that holds all available units.
+ */
 class Codex {
+    
+    // Units that are available within the codex.
     List<Unit> units;
 
-    // Constructor
+    // Intializes the codex with predfined units. 
     public Codex() {
         
+        // Declares and intializes an array.
         units = new ArrayList<>();
         
-        // Sample units
+        // Inserts units into the codex.
         units.add(new Unit("Spartan", 8, 12, 0.95, 0.9, 20, 0.85, 15, 150));     // Spartan: Super soldiers.
         units.add(new Unit("Elite", 7, 10, 0.9, 0.85, 18, 0.8, 14, 130));       // Elite: Covenant warriors.
         units.add(new Unit("Grunt", 5, 5, 0.6, 0.5, 8, 0.4, 6, 40));           // Grunt: Covenant infantry.
@@ -86,23 +101,26 @@ class Codex {
         
     }
 
+    // Retrieves and returns the list of units found within the codex.
     public List<Unit> getUnits() {
         return units;
     }
 }
 
-
+/**
+ * 
+ */
 class Army {
    
     List<Unit> selectedUnits;
 
-    // Constructor
+    // Initalizes the army.
     public Army() {
         
         selectedUnits = new ArrayList<>();
     }
 
-    // Adds a unit to the army.
+    // Inserts a unit to the army.
     public void addUnit(Unit unit) {
         
         selectedUnits.add(unit);
@@ -120,6 +138,7 @@ class Army {
         return selectedUnits.stream().mapToInt(Unit::calculateEffectiveness).sum();
     }
 
+    // Prints all of the units in the army in an orgainized format.
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Units:\n");
@@ -130,18 +149,22 @@ class Army {
     }
 }
 
+/**
+ * Class to optimize an army based on point budget using dynamic programming.
+ */
 class ArmyOptimizer {
 
+    // Declares variables.
     private Army army;
     private int maxPoints;
 
-    // Constructor
+    // Initializes the optimizer with an army and a max point variables.
     public ArmyOptimizer(Army army, int maxPoints) {
         this.army = army;
         this.maxPoints = maxPoints;
     }
 
-    // Method to optimize the army.
+    // Optimizes the army by selecting the best units within the point restriction.
     public Army optimize() {
         
         // Retrieve the codex (available units) from the army.
@@ -153,23 +176,27 @@ class ArmyOptimizer {
     
     
     
-    // Method to select the optimal army using dynamic programming.
+    // Using dynamic programming method to select and build the optimal army of units.
     public static Army buildOptimalArmy(List<Unit> codex, int maxPoints) {
 
         int n = codex.size();
+        
+        // Dynamic programming (DP) table to store best values.
         int[][] dp = new int[n + 1][maxPoints + 1];
 
-        // Fill table.
+        // Fill DP table.
         for (int i = 1; i <= n; i++) {
             Unit unit = codex.get(i - 1);
             for (int points = 0; points <= maxPoints; points++) {
                 
-                // Ensure that an invalid index is not accessed.  
+                // Checks to see that an invalid index is not accessed.  
                 if (unit.pointCost <= points) {
                     dp[i][points] = Math.max(dp[i - 1][points],
                                              dp[i - 1][points - unit.pointCost] + unit.calculateEffectiveness());
                 } else {
-                    dp[i][points] = dp[i - 1][points];  // Carry forward previous value
+                    
+                    // If unit can't be added, carry forward the previous value.
+                    dp[i][points] = dp[i - 1][points]; 
                 }
             }
         }
@@ -185,7 +212,7 @@ class ArmyOptimizer {
                 // Ensure we only add the unit if we can afford its cost.
                 if (unit.pointCost <= points) {
                     optimalArmy.addUnit(unit);
-                    points -= unit.pointCost;
+                    points -= unit.pointCost; // Deduct the unit's point cost.
                 }
             }
         }
@@ -196,8 +223,9 @@ class ArmyOptimizer {
 
 
 
-
-
+/**
+ *  Class that simulates unit combat.
+ */
 class UnitCombat {
     
     // Simulate combat between two units at a given distance.
@@ -232,7 +260,9 @@ class UnitCombat {
 
 
 
-
+/**
+ *  
+ */
 class Battlefield {
     String size; // "small", "large"
     int objectives;
@@ -242,11 +272,12 @@ class Battlefield {
         this.objectives = objectives;
     }
 
-    // Determine if the battlefield is large or small.
+    // Check if the battlefield is large or small.
     public boolean isLarge() {
         return this.size.equals("large");
     }
 
+    // Prints the size of battlefield and objectives in an orgainized format.
     @Override
     public String toString() {
         return "Battlefield [Size: " + size + ", Objectives: " + objectives + "]";
@@ -254,6 +285,9 @@ class Battlefield {
 }
 
 
+/**
+ *  
+ */
 class BattleSimulator {
 
     // Function that simulates a battle between two armies on a set battlefield.
@@ -313,6 +347,7 @@ public static void main(String[] args) {
     
     System.out.println("\n-----------------------------------------------------------------------------------");
    
+    
     // Test the ArmyOptimizer for a maximum point budget.
     int maxPointsA = 600;
     int maxPointsB = 600;
@@ -343,8 +378,11 @@ public static void main(String[] args) {
     Battlefield battlefield = new Battlefield("small", 3); // Small battlefield with 3 objectives
     String battleResult = BattleSimulator.Battle(optimizedArmyA, optimizedArmyB, battlefield);
     
+    // Output the size of battlefield and objectives.
+    System.out.println("\n" + battlefield);
+    
     // Output the result of who won the battle between the two armies.
-    System.out.println("\nBattle Result: " + battleResult);
+    System.out.println("Battle Result: " + battleResult);
     
     
     }
