@@ -1,4 +1,26 @@
 /**
+ * This program implements an army optimization tool inspired by Warhammer 40,000,
+ * allowing users to build the most effective army configuration within a given points
+ * budget. The program makes use of dynamic programming to compute the optimal
+ * combination of units from a codex, balancing each unit's attributes (speed, wounds,
+ * armor, accuracy) and the overall effectiveness in battle. The program includes several
+ * custom functions that allow the user to add units to the codex, compute the most effective
+ * army configuration, simulate battles, and calculate the effectiveness of the chosen army
+ * based on combat roles and battlefield conditions. The program first initializes a codex
+ * to store all available units, where each unit is assigned specific attributes for comparison 
+ * during the optimization process. Then, the program initializes two Army objects, representing
+ * two opposing armies (Army A and Army B), which will hold the units selected for each army. 
+ * Next the program calls the addUnit method to  insert specific units from the codex into each 
+ * army. After inserting the units into both armies, the program outputs the current army compositions,
+ * including their total points and effectiveness. The program then employs dynamic programming 
+ * utilizing the ArmyOptimizer class to optimize each army within a predefined point budget. The optimizer
+ * iterates through the available units and selects the most effective combination of units for the 
+ * set cost limit. Once both armies are optimized, the program outputs the final compositions of the 
+ * optimized armies, including their total points and effectiveness. Next, the program simulates a 
+ * battle between the two optimized armies by invoking the BattleSimulator class, factoring in 
+ * battlefield size and objectives. It then outputs the size of the battlefield and number of objectives.
+ * Lastly, the program outputs the result of the battle, determining which army wins based on who has the 
+ * most effective team.
  * 
  *
  * @author Nigel Arias, Sidney Gills, Brianne Tomaszek
@@ -10,7 +32,7 @@ import java.util.List;
 
  
  /**
- * Class that represents a unit in the army.
+ * Class to represent a unit in the army.
  */
  class Unit {
     
@@ -64,7 +86,7 @@ import java.util.List;
 
 
 /**
- * Represents a Codex that holds all available units.
+ * Class to represent a codex that holds all available units.
  */
 class Codex {
     
@@ -108,7 +130,7 @@ class Codex {
 }
 
 /**
- * 
+ * Class to represent a army that holds all selected units.
  */
 class Army {
    
@@ -176,7 +198,7 @@ class ArmyOptimizer {
     
     
     
-    // Using dynamic programming method to select and build the optimal army of units.
+    // Using dynamic programming to select and build the optimal army of units.
     public static Army buildOptimalArmy(List<Unit> codex, int maxPoints) {
 
         int n = codex.size();
@@ -261,7 +283,7 @@ class UnitCombat {
 
 
 /**
- *  
+ *  Class that represents a battlefield that sets the size of it and amount of objectives.
  */
 class Battlefield {
     String size; // "small", "large"
@@ -286,7 +308,7 @@ class Battlefield {
 
 
 /**
- *  
+ *  Class that simulates a battle between two armies.
  */
 class BattleSimulator {
 
