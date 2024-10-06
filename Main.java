@@ -29,12 +29,12 @@
 
 import java.util.ArrayList;
 import java.util.List;
-
  
- /**
+  
+/**
  * Class to represent a unit in the army.
  */
- class Unit {
+class Unit {
     
     // Declares the unit's properties of its name speed, wounds, armor, shooting accuracy, shooting damage, 
     // close combat accuracy, close combat damage, and point cost.
@@ -67,10 +67,9 @@ import java.util.List;
 
     // Calculates the overall effectiveness of a unit based on its stats.
     public int calculateEffectiveness() {
-        
-        // Calculates effectiveness by combinding the stats for wounds, damage, and accuracy. 
-        return (int) (this.wounds * this.shootingDamage * this.shootingAccuracy + 
-                      this.closeCombatDamage * this.closeCombatAccuracy);
+
+        return (int) ((this.shootingDamage * this.shootingAccuracy + this.closeCombatDamage * this.closeCombatAccuracy)
+                        * (this.speed + this.wounds * this.armor));
     }
 
     // Prints the unit's details in an orgainized format.
@@ -78,13 +77,13 @@ import java.util.List;
     public String toString() {
         
         return name + " [Speed: " + speed + ", Wounds: " + wounds + ", Armor: " + armor +
-               ", Shooting: " + shootingDamage + " (" + shootingAccuracy + ")" +
-               ", Close Combat: " + closeCombatDamage + " (" + closeCombatAccuracy + ")" + 
-               ", Points: " + pointCost + "]";
+            ", Shooting: " + shootingDamage + " (" + shootingAccuracy + ")" +
+            ", Close Combat: " + closeCombatDamage + " (" + closeCombatAccuracy + ")" + 
+            ", Points: " + pointCost + "]";
     }
 }
-
-
+ 
+ 
 /**
  * Class to represent a codex that holds all available units.
  */
@@ -93,7 +92,7 @@ class Codex {
     // Units that are available within the codex.
     List<Unit> units;
 
-    // Intializes the codex with predfined units. 
+    // Intializes the codex with predefined units. 
     public Codex() {
         
         // Declares and intializes an array.
@@ -128,12 +127,13 @@ class Codex {
         return units;
     }
 }
+ 
 
 /**
- * Class to represent a army that holds all selected units.
+ * Class to represent an army that holds all selected units.
  */
 class Army {
-   
+
     List<Unit> selectedUnits;
 
     // Initalizes the army.
@@ -142,10 +142,16 @@ class Army {
         selectedUnits = new ArrayList<>();
     }
 
-    // Inserts a unit to the army.
+    // Inserts a unit into the army.
     public void addUnit(Unit unit) {
         
         selectedUnits.add(unit);
+    }
+
+    // Retrieves and returns the list of units found within the army.
+    public List<Unit> getSelectedUnits() {
+        
+        return selectedUnits;
     }
 
     // Calculates the total point cost of the army.
@@ -157,7 +163,7 @@ class Army {
     // Calculates the total effectiveness of the army.
     public int calculateTotalEffectiveness() {
         
-        return selectedUnits.stream().mapToInt(Unit::calculateEffectiveness).sum();
+        return (int) selectedUnits.stream().mapToInt(Unit::calculateEffectiveness).sum() / 50;
     }
 
     // Prints all of the units in the army in an orgainized format.
@@ -170,6 +176,7 @@ class Army {
         return sb.toString();
     }
 }
+ 
 
 /**
  * Class to optimize an army based on point budget using dynamic programming.
@@ -197,7 +204,6 @@ class ArmyOptimizer {
     }
     
     
-    
     // Using dynamic programming to select and build the optimal army of units.
     public static Army buildOptimalArmy(List<Unit> codex, int maxPoints) {
 
@@ -214,7 +220,7 @@ class ArmyOptimizer {
                 // Checks to see that an invalid index is not accessed.  
                 if (unit.pointCost <= points) {
                     dp[i][points] = Math.max(dp[i - 1][points],
-                                             dp[i - 1][points - unit.pointCost] + unit.calculateEffectiveness());
+                                            dp[i - 1][points - unit.pointCost] + unit.calculateEffectiveness());
                 } else {
                     
                     // If unit can't be added, carry forward the previous value.
@@ -242,9 +248,8 @@ class ArmyOptimizer {
         return optimalArmy;
     }
 }
-
-
-
+ 
+ 
 /**
  *  Class that simulates unit combat.
  */
@@ -279,133 +284,242 @@ class UnitCombat {
         }
     }
 }
-
-
-
+ 
+ 
 /**
- *  Class that represents a battlefield that sets the size of it and amount of objectives.
+ *  Class represents a battlefield that sets its size, number of objectives, and combat multipliers.
  */
 class Battlefield {
-    String size; // "small", "large"
+    int distance;
     int objectives;
+    String size;
+    double rangeMultiplier;
+    double meleeMultiplier;
+    double speedMultiplier;
+    double unitForceMultiplier;
 
-    public Battlefield(String size, int objectives) {
-        this.size = size;
-        this.objectives = objectives;
+    public Battlefield(int distance, int objectives) {
+        setBattlefieldVars(distance, objectives);
+        setMultipliers();
+    }
+    
+    // Ensures battlefield conditions are between 0 and 10 and classifies its size.
+    private void setBattlefieldVars(int distance, int objectives) {
+        
+        if (distance < 0) {
+            this.distance = 0;
+        } else if (distance > 10) {
+            this.distance = 10;
+        } else {
+            this.distance = distance;
+        }
+
+        if (objectives < 0) {
+            this.objectives = 0;
+        } else if (objectives > 10) {
+            this.objectives = 10;
+        } else {
+            this.objectives = objectives;
+        }
+
+        if (distance <= 3) {
+            this.size = "Small";
+        } else if (distance >= 7) {
+            this.size = "Large";
+        } else {
+            this.size = "Medium";
+        }
     }
 
-    // Check if the battlefield is large or small.
-    public boolean isLarge() {
-        return this.size.equals("large");
-    }
+    // Sets combat multipliers based on battlefield conditions.
+    private void setMultipliers() {
+        
+        // Adjusts how range and melee combat are weighted, with a smaller battlefield
+        // benefiting melee, and a larger battlefield benefiting range.
+        if (distance < 5) {
+            meleeMultiplier = 1.0 + 0.1 * (5 - distance);
+            rangeMultiplier = 1.0 - 0.1 * (5 - distance);
+        } else if (distance > 5) {
+            rangeMultiplier = 1.0 + 0.1 * (distance - 5);
+            meleeMultiplier = 1.0 - 0.1 * (distance - 5);
+        } else {
+            rangeMultiplier = 1.0;
+            meleeMultiplier = 1.0;
+        }
 
+        // Adjusts how speed and the number of units is weighted, with a greater
+        // number of objectives leading to heavier multipliers.
+        speedMultiplier = 1.0 + 0.05 * objectives;
+        unitForceMultiplier = 1.0 + 0.01 * objectives;
+    }
+    
     // Prints the size of battlefield and objectives in an orgainized format.
     @Override
     public String toString() {
-        return "Battlefield [Size: " + size + ", Objectives: " + objectives + "]";
+        // [Size: Medium - 5, Objectives: 5]
+        return "[Size: " + size + " - " + distance + ", Objectives: " + objectives + "]";
     }
 }
-
-
+ 
+ 
 /**
  *  Class that simulates a battle between two armies.
  */
 class BattleSimulator {
+    
+    // Calculates an army's effectiveness based on battlefield conditions.
+    private static double calculateBattleEffectiveness(Army army, Battlefield battlefield) {
 
-    // Function that simulates a battle between two armies on a set battlefield.
+        double totalBattleEffectiveness = 0.0;
+
+        // Applies combat multipliers to each unit then adds it to the total.
+        for (Unit unit : army.getSelectedUnits()) {
+            double range = unit.shootingDamage * unit.shootingAccuracy * battlefield.rangeMultiplier;
+            double melee = unit.closeCombatDamage * unit.closeCombatAccuracy * battlefield.meleeMultiplier;
+            double agility = unit.speed * battlefield.speedMultiplier;
+            double stamina = unit.wounds * unit.armor;
+
+            double unitBattleEffectiveness = (range + melee) * (agility + stamina);
+
+            totalBattleEffectiveness += unitBattleEffectiveness;
+        }
+
+        // Applies a force multiplier and returns the army's battlefield effectiveness.
+        return totalBattleEffectiveness * (battlefield.unitForceMultiplier + 0.01 * army.getSelectedUnits().size()) / 50;
+    }
+    
+    // Simulates a battle between two armies on a set battlefield.
     public static String Battle(Army armyA, Army armyB, Battlefield battlefield) {
         
-        int armyAEffectiveness = armyA.calculateTotalEffectiveness();
-        int armyBEffectiveness = armyB.calculateTotalEffectiveness();
+        // Recalculates each army's effectiveness, taking battlefield conditions into account.
+        int armyABattleEffectiveness = (int) calculateBattleEffectiveness(armyA, battlefield);
+        int armyBBattleEffectiveness = (int) calculateBattleEffectiveness(armyB, battlefield);
 
-       
-        // Checks to see which army wins based on who has the highest effectiveness.
-        if (armyAEffectiveness > armyBEffectiveness) {
-            return "Army A wins!";
-        } else if (armyBEffectiveness > armyAEffectiveness) {
-            return "Army B wins!";
+        // Stores a formatted string that details the effectiveness of each army.
+        String effectiveness = "\tArmy A Effectiveness: " + armyABattleEffectiveness +
+                            "\n\tArmy B Effectiveness: " + armyBBattleEffectiveness + "\n";
+
+        // Returns the result of the battle, declaring a winner or draw.
+        if (armyABattleEffectiveness > armyBBattleEffectiveness) {
+            return effectiveness + "Army A wins!";
+        } else if (armyBBattleEffectiveness > armyABattleEffectiveness) {
+            return effectiveness + "Army B wins!";
         } else {
-            return "It's a draw!";
+            return effectiveness + "It's a draw!";
         }
     }
 }
+ 
 
-
-
-
+// Tests the functionality of the program and algorithm.
 public class Main {
-public static void main(String[] args) {
-    Codex codex = new Codex();
+    public static void main(String[] args) {
+        Codex codex = new Codex();
+            
+        Army armyA = new Army();
+        Army armyB = new Army();
         
-    Army armyA = new Army();
-    Army armyB = new Army();
-    
-    // Add units to Army A.
-    armyA.addUnit(codex.getUnits().get(0)); // Spartan
-    armyA.addUnit(codex.getUnits().get(2)); // Grunt
-    armyA.addUnit(codex.getUnits().get(4)); // Hunter
-    armyA.addUnit(codex.getUnits().get(6)); // Brute
-    armyA.addUnit(codex.getUnits().get(10)); // Marine
-    armyA.addUnit(codex.getUnits().get(16)); // Engineer
+        // Add units to Army A.
+        armyA.addUnit(codex.getUnits().get(0)); // Spartan
+        armyA.addUnit(codex.getUnits().get(2)); // Grunt
+        armyA.addUnit(codex.getUnits().get(4)); // Hunter
+        armyA.addUnit(codex.getUnits().get(6)); // Brute
+        armyA.addUnit(codex.getUnits().get(10)); // Marine
+        armyA.addUnit(codex.getUnits().get(16)); // Engineer
 
-    // Add units to Army B.
-    armyB.addUnit(codex.getUnits().get(1)); // Elite
-    armyB.addUnit(codex.getUnits().get(3)); // Jackal
-    armyB.addUnit(codex.getUnits().get(5)); // ODST
-    armyB.addUnit(codex.getUnits().get(9)); // Banshee
-    armyB.addUnit(codex.getUnits().get(11)); // Scorpion
-    armyB.addUnit(codex.getUnits().get(15)); // Chopper
-   
-    // Output both armies and their stats.
-    System.out.println("Army A:\n");
-    System.out.println(armyA);
-    System.out.println("Total Points: " + armyA.calculateTotalPoints());
-    System.out.println("Total Effectiveness: " + armyA.calculateTotalEffectiveness());
+        // Add units to Army B.
+        armyB.addUnit(codex.getUnits().get(1)); // Elite
+        armyB.addUnit(codex.getUnits().get(3)); // Jackal
+        armyB.addUnit(codex.getUnits().get(5)); // ODST
+        armyB.addUnit(codex.getUnits().get(9)); // Banshee
+        armyB.addUnit(codex.getUnits().get(11)); // Scorpion
+        armyB.addUnit(codex.getUnits().get(15)); // Chopper
     
-    System.out.println("\nArmy B:\n");
-    System.out.println(armyB);
-    System.out.println("Total Points: " + armyB.calculateTotalPoints());
-    System.out.println("Total Effectiveness: " + armyB.calculateTotalEffectiveness());
+        // Output both armies and their stats.
+        System.out.println("Army A:\n");
+        System.out.println(armyA);
+        System.out.println("Total Points: " + armyA.calculateTotalPoints());
+        System.out.println("Total Effectiveness: " + armyA.calculateTotalEffectiveness());
+        
+        System.out.println("\nArmy B:\n");
+        System.out.println(armyB);
+        System.out.println("Total Points: " + armyB.calculateTotalPoints());
+        System.out.println("Total Effectiveness: " + armyB.calculateTotalEffectiveness());
+        
+        System.out.println("\n-----------------------------------------------------------------------------------");
     
-    System.out.println("\n-----------------------------------------------------------------------------------");
-   
-    
-    // Test the ArmyOptimizer for a maximum point budget.
-    int maxPointsA = 600;
-    int maxPointsB = 600;
-    
-    
-    // Optimize Army A and Army B.
-    ArmyOptimizer optimizerA = new ArmyOptimizer(armyA, maxPointsA);
-    Army optimizedArmyA = optimizerA.optimize();
+        
+        // Test the ArmyOptimizer for a maximum point budget.
+        int maxPointsA = 600;
+        int maxPointsB = 600;
+                
+        // Optimize Army A and Army B.
+        ArmyOptimizer optimizerA = new ArmyOptimizer(armyA, maxPointsA);
+        Army optimizedArmyA = optimizerA.optimize();
 
-    ArmyOptimizer optimizerB = new ArmyOptimizer(armyB, maxPointsB);
-    Army optimizedArmyB = optimizerB.optimize();
-    
-   
-    
-    // Display the optimized armies and their stats.
-    System.out.println("\nOptimized Army A (Max Points: " + maxPointsA + "):");
-    System.out.println(optimizedArmyA);
-    System.out.println("Total Points: " + optimizedArmyA.calculateTotalPoints());
-    System.out.println("Total Effectiveness: " + optimizedArmyA.calculateTotalEffectiveness());
+        ArmyOptimizer optimizerB = new ArmyOptimizer(armyB, maxPointsB);
+        Army optimizedArmyB = optimizerB.optimize();
+        
+        // Display the optimized armies and their stats.
+        System.out.println("\nOptimized Army A (Max Points: " + maxPointsA + "):");
+        System.out.println(optimizedArmyA);
+        System.out.println("Total Points: " + optimizedArmyA.calculateTotalPoints());
+        System.out.println("Total Effectiveness: " + optimizedArmyA.calculateTotalEffectiveness());
 
-    System.out.println("\nOptimized Army B (Max Points: " + maxPointsB + "):");
-    System.out.println(optimizedArmyB);
-    System.out.println("Total Points: " + optimizedArmyB.calculateTotalPoints());
-    System.out.println("Total Effectiveness: " + optimizedArmyB.calculateTotalEffectiveness());
+        System.out.println("\nOptimized Army B (Max Points: " + maxPointsB + "):");
+        System.out.println(optimizedArmyB);
+        System.out.println("Total Points: " + optimizedArmyB.calculateTotalPoints());
+        System.out.println("Total Effectiveness: " + optimizedArmyB.calculateTotalEffectiveness());
 
-    
-    // Simulate the battle between Army A and Army B.
-    Battlefield battlefield = new Battlefield("small", 3); // Small battlefield with 3 objectives
-    String battleResult = BattleSimulator.Battle(optimizedArmyA, optimizedArmyB, battlefield);
-    
-    // Output the size of battlefield and objectives.
-    System.out.println("\n" + battlefield);
-    
-    // Output the result of who won the battle between the two armies.
-    System.out.println("Battle Result: " + battleResult);
-    
-    
+        System.out.println("\n-----------------------------------------------------------------------------------");
+        
+
+        // Simulates battles between Army A and Army B on different battlefields, displaying battlefield conditions,
+        // the effectiveness of each army in these conditions, and the result of the battle.
+        System.out.println("\nBattle Results:");
+
+        // Battle 1
+        Battlefield battlefield1 = new Battlefield(3, 3);
+        String battleResult1 = BattleSimulator.Battle(optimizedArmyA, optimizedArmyB, battlefield1);
+        System.out.println("\nBattlefield 1 " + battlefield1);
+        System.out.println(battleResult1);
+        
+        // Battle 2
+        Battlefield battlefield2 = new Battlefield(7, 4);
+        String battleResult2 = BattleSimulator.Battle(optimizedArmyA, optimizedArmyB, battlefield2);
+        System.out.println("\nBattlefield 2 " + battlefield2);
+        System.out.println(battleResult2);
+
+        // Battle 3
+        Battlefield battlefield3 = new Battlefield(10, 10); 
+        String battleResult3 = BattleSimulator.Battle(optimizedArmyA, optimizedArmyB, battlefield3);
+        System.out.println("\nBattlefield 3 " + battlefield3);
+        System.out.println(battleResult3);
+        
+        // Battle 4
+        Battlefield battlefield4 = new Battlefield(0, 0); 
+        String battleResult4 = BattleSimulator.Battle(optimizedArmyA, optimizedArmyB, battlefield4);
+        System.out.println("\nBattlefield 4 " + battlefield4);
+        System.out.println(battleResult4);
+        
+        // Battle 5
+        Battlefield battlefield5 = new Battlefield(5, 5); 
+        String battleResult5 = BattleSimulator.Battle(optimizedArmyA, optimizedArmyB, battlefield5);
+        System.out.println("\nBattlefield 5 " + battlefield5);
+        System.out.println(battleResult5);
+        
+        // Battle 6
+        Battlefield battlefield6 = new Battlefield(10, 0); 
+        String battleResult6 = BattleSimulator.Battle(optimizedArmyA, optimizedArmyB, battlefield6);
+        System.out.println("\nBattlefield 6 " + battlefield6);
+        System.out.println(battleResult6);
+        
+        // Battle 7
+        Battlefield battlefield7 = new Battlefield(0, 10);
+        String battleResult7 = BattleSimulator.Battle(optimizedArmyA, optimizedArmyB, battlefield7);
+        System.out.println("\nBattlefield 7 " + battlefield7);
+        System.out.println(battleResult7);   
+        
     }
 }    
+ 
