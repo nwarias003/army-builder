@@ -248,70 +248,34 @@ class ArmyOptimizer {
         return optimalArmy;
     }
 }
- 
- 
-/**
- *  Class that simulates unit combat.
- */
-class UnitCombat {
-    
-    // Simulate combat between two units at a given distance.
-    public static String Combat(Unit A, Unit B, int distance) {
-        
-        // Compares the effectiveness based on how distance affects shooting vs close combat.
-        int effectivenessA = A.calculateEffectiveness();
-        int effectivenessB = B.calculateEffectiveness();
 
-        if (distance > 5) {
-            
-            // Assume shooting combat at a distance.
-            effectivenessA *= A.shootingAccuracy;
-            effectivenessB *= B.shootingAccuracy;
-        } 
-        else {
-            
-            // Assume close combat at short distance.
-            effectivenessA *= A.closeCombatAccuracy;
-            effectivenessB *= B.closeCombatAccuracy;
-        }
 
-        if (effectivenessA > effectivenessB) {
-            return A.name + " wins";
-        } else if (effectivenessB > effectivenessA) {
-            return B.name + " wins";
-        } else {
-            return "Draw";
-        }
-    }
-}
- 
- 
 /**
  *  Class represents a battlefield that sets its size, number of objectives, and combat multipliers.
  */
 class Battlefield {
-    int distance;
+    int size;
     int objectives;
-    String size;
+    String sizeClass;
     double rangeMultiplier;
     double meleeMultiplier;
     double speedMultiplier;
     double unitForceMultiplier;
 
-    public Battlefield(int distance, int objectives) {
-        setBattlefieldVars(distance, objectives);
+    public Battlefield(int size, int objectives) {
+        setBattlefieldVars(size, objectives);
         setMultipliers();
     }
     
     // Ensures battlefield conditions are between 0 and 10 and classifies its size.
-    private void setBattlefieldVars(int distance, int objectives) {
+    private void setBattlefieldVars(int size, int objectives) {
         
-        if (distance < 0) {
-            this.distance = 0;
-        } else if (distance > 10) {
-            this.distance = 10;
+        if (size < 0) {
+            this.size = 0;
+        } else if (size > 10) {
+            this.size = 10;
         } else {
-            this.distance = distance;
+            this.size = size;
         }
 
         if (objectives < 0) {
@@ -322,12 +286,12 @@ class Battlefield {
             this.objectives = objectives;
         }
 
-        if (distance <= 3) {
-            this.size = "Small";
-        } else if (distance >= 7) {
-            this.size = "Large";
+        if (size <= 3) {
+            this.sizeClass = "Small";
+        } else if (size >= 7) {
+            this.sizeClass = "Large";
         } else {
-            this.size = "Medium";
+            this.sizeClass = "Medium";
         }
     }
 
@@ -336,12 +300,12 @@ class Battlefield {
         
         // Adjusts how range and melee combat are weighted, with a smaller battlefield
         // benefiting melee, and a larger battlefield benefiting range.
-        if (distance < 5) {
-            meleeMultiplier = 1.0 + 0.1 * (5 - distance);
-            rangeMultiplier = 1.0 - 0.1 * (5 - distance);
-        } else if (distance > 5) {
-            rangeMultiplier = 1.0 + 0.1 * (distance - 5);
-            meleeMultiplier = 1.0 - 0.1 * (distance - 5);
+        if (size < 5) {
+            meleeMultiplier = 1.0 + 0.1 * (5 - size);
+            rangeMultiplier = 1.0 - 0.1 * (5 - size);
+        } else if (size > 5) {
+            rangeMultiplier = 1.0 + 0.1 * (size - 5);
+            meleeMultiplier = 1.0 - 0.1 * (size - 5);
         } else {
             rangeMultiplier = 1.0;
             meleeMultiplier = 1.0;
@@ -357,7 +321,63 @@ class Battlefield {
     @Override
     public String toString() {
         // [Size: Medium - 5, Objectives: 5]
-        return "[Size: " + size + " - " + distance + ", Objectives: " + objectives + "]";
+        return "[Size: " + sizeClass + " - " + size + ", Objectives: " + objectives + "]";
+    }
+}
+ 
+ 
+/*
+ * Class to represent a unit in battle sustaining damage in combat.
+ */
+class BattleUnit {
+    Unit unit;
+    double health;
+
+    public BattleUnit (Unit unit) {
+        this.unit = unit;
+        this.health = unit.calculateEffectiveness();
+    }
+
+    public boolean isDead() {
+        return health <= 0;
+    }
+
+    @Override
+    public String toString() {
+        return unit.name + " [Health: " + health + "]";
+    }
+}
+
+
+/**
+ *  Class that simulates unit combat.
+ */
+class UnitCombat {
+    
+    // Simulate combat between two units at a given distance.
+    public static String Combat(Unit A, Unit B, int distance) {
+        
+        // Compares the effectiveness based on how distance affects shooting vs close combat.
+        int effectivenessA = A.calculateEffectiveness();
+        int effectivenessB = B.calculateEffectiveness();
+
+        if (distance > 5) {
+            // Assume shooting combat at a distance.
+            effectivenessA = (int)(effectivenessA * A.shootingAccuracy);
+            effectivenessB = (int)(effectivenessB * B.shootingAccuracy);
+        } else {
+            // Assume close combat at short distance.
+            effectivenessA = (int)(effectivenessA * A.closeCombatAccuracy);
+            effectivenessB = (int)(effectivenessB * B.closeCombatAccuracy);
+        }
+
+        if (effectivenessA > effectivenessB) {
+            return A.name;
+        } else if (effectivenessB > effectivenessA) {
+            return B.name;
+        } else {
+            return "Draw";
+        }
     }
 }
  
@@ -367,13 +387,19 @@ class Battlefield {
  */
 class BattleSimulator {
     
+    // Generates a random index used in selecting a random unit.
+    private static BattleUnit getRandomUnit(List<BattleUnit> army) {
+        int index = (int) (Math.random() * army.size());
+        return army.get(index);
+    }
+    
     // Calculates an army's effectiveness based on battlefield conditions.
-    private static double calculateBattleEffectiveness(Army army, Battlefield battlefield) {
-
+    private static int getBattleEffectiveness(List<BattleUnit> army, Battlefield battlefield) {
         double totalBattleEffectiveness = 0.0;
 
         // Applies combat multipliers to each unit then adds it to the total.
-        for (Unit unit : army.getSelectedUnits()) {
+        for (BattleUnit battleUnit : army) {
+            Unit unit = battleUnit.unit;
             double range = unit.shootingDamage * unit.shootingAccuracy * battlefield.rangeMultiplier;
             double melee = unit.closeCombatDamage * unit.closeCombatAccuracy * battlefield.meleeMultiplier;
             double agility = unit.speed * battlefield.speedMultiplier;
@@ -385,27 +411,79 @@ class BattleSimulator {
         }
 
         // Applies a force multiplier and returns the army's battlefield effectiveness.
-        return totalBattleEffectiveness * (battlefield.unitForceMultiplier + 0.01 * army.getSelectedUnits().size()) / 50;
+        return (int) (totalBattleEffectiveness * (battlefield.unitForceMultiplier + 0.01 * army.size()) / 50);
     }
     
     // Simulates a battle between two armies on a set battlefield.
     public static String Battle(Army armyA, Army armyB, Battlefield battlefield) {
-        
-        // Recalculates each army's effectiveness, taking battlefield conditions into account.
-        int armyABattleEffectiveness = (int) calculateBattleEffectiveness(armyA, battlefield);
-        int armyBBattleEffectiveness = (int) calculateBattleEffectiveness(armyB, battlefield);
 
-        // Stores a formatted string that details the effectiveness of each army.
-        String effectiveness = "\tArmy A Effectiveness: " + armyABattleEffectiveness +
-                            "\n\tArmy B Effectiveness: " + armyBBattleEffectiveness + "\n";
+        // Initializes BattleUnits for each army.
+        List<BattleUnit> battleArmyA = new ArrayList<>();
+        for (Unit unit : armyA.getSelectedUnits()) {
+            battleArmyA.add(new BattleUnit(unit));
+        }
 
-        // Returns the result of the battle, declaring a winner or draw.
-        if (armyABattleEffectiveness > armyBBattleEffectiveness) {
-            return effectiveness + "Army A wins!";
-        } else if (armyBBattleEffectiveness > armyABattleEffectiveness) {
-            return effectiveness + "Army B wins!";
+        List<BattleUnit> battleArmyB = new ArrayList<>();
+        for (Unit unit : armyB.getSelectedUnits()) {
+            battleArmyB.add(new BattleUnit(unit));
+        }
+
+        // Simulates combat between random units from each army until one or both armies are depleted.
+        while (!battleArmyA.isEmpty() && !battleArmyB.isEmpty()) {
+            BattleUnit unitA = getRandomUnit(battleArmyA);
+            BattleUnit unitB = getRandomUnit(battleArmyB);
+
+            // Calculates the difference in effectiveness between units.
+            double difference = Math.abs(unitA.unit.calculateEffectiveness() - unitB.unit.calculateEffectiveness());
+
+            // Generates a random distance between units in combat.
+            int distance = (int) (Math.random() * 11);
+
+            // Simulates combat, determines winner, and reduces unit health due to damage sustained in combat,
+            // equal to a fraction of the difference between unit effectiveness and based on combat result.
+            String result = UnitCombat.Combat(unitA.unit, unitB.unit, distance);
+            if (result.equals(unitA.unit.name)) {
+                unitB.health -= 0.5 * difference;
+                unitA.health -= 0.2 * difference;
+            } else if (result.equals(unitB.unit.name)) {
+                unitA.health -= 0.5 * difference;
+                unitB.health -= 0.2 * difference;
+            } else {
+                unitA.health -= 0.1 * difference;
+                unitB.health -= 0.1 * difference;
+            }
+
+            // Removes a unit from the battle once its health reaches zero.
+            if (unitA.isDead()) {
+                battleArmyA.remove(unitA);
+            }
+            if (unitB.isDead()) {
+                battleArmyB.remove(unitB);
+            }
+            /*battleArmyA.removeIf(unit -> unit.isAlive());
+            battleArmyB.removeIf(unit -> unit.isAlive());*/
+        }
+
+        // Determines the winner, which is the army with remaining units, or the army with a higher
+        // battlefield effectiveness if no units remaining, or a draw if effectiveness is equal. 
+        if (!battleArmyA.isEmpty() && battleArmyB.isEmpty()) {
+            return "Army A wins!";
+        } else if (!battleArmyB.isEmpty() && battleArmyA.isEmpty()) {
+            return "Army B wins!";
+        } else if (battleArmyB.isEmpty() && battleArmyA.isEmpty()) {
+            // No remaining units, calculates each army's effectiveness on the battlefield to determine the winner.
+            int effectivenessA = getBattleEffectiveness(battleArmyA, battlefield);
+            int effectivenessB = getBattleEffectiveness(battleArmyB, battlefield);
+            if (effectivenessA > effectivenessB) {
+                return "Army A wins!";
+            } else if (effectivenessB > effectivenessA) {
+                return "Army B wins!";
+            } else {
+                // Each army's effectiveness on the battlefield was equal, so it's a draw.
+                return "It's a draw!";
+            }
         } else {
-            return effectiveness + "It's a draw!";
+            return "It's a draw!";
         }
     }
 }
@@ -413,6 +491,7 @@ class BattleSimulator {
 
 // Tests the functionality of the program and algorithm.
 public class Main {
+    
     public static void main(String[] args) {
         Codex codex = new Codex();
             
@@ -478,48 +557,28 @@ public class Main {
         // the effectiveness of each army in these conditions, and the result of the battle.
         System.out.println("\nBattle Results:");
 
-        // Battle 1
-        Battlefield battlefield1 = new Battlefield(3, 3);
-        String battleResult1 = BattleSimulator.Battle(optimizedArmyA, optimizedArmyB, battlefield1);
-        System.out.println("\nBattlefield 1 " + battlefield1);
-        System.out.println(battleResult1);
+        // Define a list of battlefields for simulation
+        List<Battlefield> battlefields = new ArrayList<>();
+        battlefields.add(new Battlefield(3, 3));
+        battlefields.add(new Battlefield(7, 4));
+        battlefields.add(new Battlefield(10, 10)); 
+        battlefields.add(new Battlefield(0, 0)); 
+        battlefields.add(new Battlefield(5, 5)); 
+        battlefields.add(new Battlefield(10, 0)); 
+        battlefields.add(new Battlefield(0, 10));
+        battlefields.add(new Battlefield((int) (Math.random() * 11), (int) (Math.random() * 11)));
+        battlefields.add(new Battlefield((int) (Math.random() * 11), (int) (Math.random() * 11)));
+        battlefields.add(new Battlefield((int) (Math.random() * 11), (int) (Math.random() * 11)));
         
-        // Battle 2
-        Battlefield battlefield2 = new Battlefield(7, 4);
-        String battleResult2 = BattleSimulator.Battle(optimizedArmyA, optimizedArmyB, battlefield2);
-        System.out.println("\nBattlefield 2 " + battlefield2);
-        System.out.println(battleResult2);
 
-        // Battle 3
-        Battlefield battlefield3 = new Battlefield(10, 10); 
-        String battleResult3 = BattleSimulator.Battle(optimizedArmyA, optimizedArmyB, battlefield3);
-        System.out.println("\nBattlefield 3 " + battlefield3);
-        System.out.println(battleResult3);
-        
-        // Battle 4
-        Battlefield battlefield4 = new Battlefield(0, 0); 
-        String battleResult4 = BattleSimulator.Battle(optimizedArmyA, optimizedArmyB, battlefield4);
-        System.out.println("\nBattlefield 4 " + battlefield4);
-        System.out.println(battleResult4);
-        
-        // Battle 5
-        Battlefield battlefield5 = new Battlefield(5, 5); 
-        String battleResult5 = BattleSimulator.Battle(optimizedArmyA, optimizedArmyB, battlefield5);
-        System.out.println("\nBattlefield 5 " + battlefield5);
-        System.out.println(battleResult5);
-        
-        // Battle 6
-        Battlefield battlefield6 = new Battlefield(10, 0); 
-        String battleResult6 = BattleSimulator.Battle(optimizedArmyA, optimizedArmyB, battlefield6);
-        System.out.println("\nBattlefield 6 " + battlefield6);
-        System.out.println(battleResult6);
-        
-        // Battle 7
-        Battlefield battlefield7 = new Battlefield(0, 10);
-        String battleResult7 = BattleSimulator.Battle(optimizedArmyA, optimizedArmyB, battlefield7);
-        System.out.println("\nBattlefield 7 " + battlefield7);
-        System.out.println(battleResult7);   
-        
+        // Iterate through each battlefield and simulate the battle
+        int battlefieldNumber = 1;
+        for (Battlefield battlefield : battlefields) {
+            System.out.println("\nBattlefield " + battlefieldNumber + " " + battlefield);
+            String battleResult = BattleSimulator.Battle(optimizedArmyA, optimizedArmyB, battlefield);
+            System.out.println(battleResult);
+            battlefieldNumber++;
+        }
     }
 }    
  
