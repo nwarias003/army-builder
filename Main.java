@@ -29,6 +29,9 @@
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.HashSet;
+import java.util.Set;
  
   
 /**
@@ -419,21 +422,30 @@ public class Main {
         Army armyA = new Army();
         Army armyB = new Army();
         
-        // Add units to Army A.
-        armyA.addUnit(codex.getUnits().get(0)); // Spartan
-        armyA.addUnit(codex.getUnits().get(2)); // Grunt
-        armyA.addUnit(codex.getUnits().get(4)); // Hunter
-        armyA.addUnit(codex.getUnits().get(6)); // Brute
-        armyA.addUnit(codex.getUnits().get(10)); // Marine
-        armyA.addUnit(codex.getUnits().get(16)); // Engineer
+        // Get list of units from codex.
+        List<Unit> units = codex.getUnits();
+        
+        // Randomly select 6 units for each army.
+        Set<Integer> selectedIndices = new HashSet<>();
+        Random random = new Random();
 
-        // Add units to Army B.
-        armyB.addUnit(codex.getUnits().get(1)); // Elite
-        armyB.addUnit(codex.getUnits().get(3)); // Jackal
-        armyB.addUnit(codex.getUnits().get(5)); // ODST
-        armyB.addUnit(codex.getUnits().get(9)); // Banshee
-        armyB.addUnit(codex.getUnits().get(11)); // Scorpion
-        armyB.addUnit(codex.getUnits().get(15)); // Chopper
+        while (selectedIndices.size() < 12) {        
+           selectedIndices.add(random.nextInt(units.size()));
+           
+        }
+        
+        List<Integer> indicesList = new ArrayList<>(selectedIndices);
+        
+        for(int i = 0; i < 6; i++) {
+        
+           // Add units to Army A.
+           armyA.addUnit(units.get(indicesList.get(i)));
+           
+           // Add units to Army B.
+           armyB.addUnit(units.get(indicesList.get(i + 6)));
+           
+        }
+
     
         // Output both armies and their stats.
         System.out.println("Army A:\n");
