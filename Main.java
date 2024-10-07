@@ -28,9 +28,9 @@
 
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.HashSet;
 import java.util.Set;
  
   
@@ -463,8 +463,6 @@ class BattleSimulator {
             if (unitB.isDead()) {
                 battleArmyB.remove(unitB);
             }
-            /*battleArmyA.removeIf(unit -> unit.isAlive());
-            battleArmyB.removeIf(unit -> unit.isAlive());*/
         }
 
         // Determines the winner, which is the army with remaining units, or the army with a higher
@@ -565,11 +563,11 @@ public class Main {
         System.out.println("\n-----------------------------------------------------------------------------------");
         
 
-        // Simulates battles between Army A and Army B on different battlefields, displaying battlefield conditions,
-        // the effectiveness of each army in these conditions, and the result of the battle.
+        // Simulates battles between Army A and Army B on different battlefields, displaying battlefield conditions
+        // conditions and the result of the battle.
         System.out.println("\nBattle Results:");
 
-        // Define a list of battlefields for simulation
+        // Defines a list of battlefields for simulation.
         List<Battlefield> battlefields = new ArrayList<>();
         battlefields.add(new Battlefield(3, 3));
         battlefields.add(new Battlefield(7, 4));
@@ -583,7 +581,7 @@ public class Main {
         battlefields.add(new Battlefield((int) (Math.random() * 11), (int) (Math.random() * 11)));
         
 
-        // Iterate through each battlefield and simulate the battle
+        // Iterates through each battlefield and simulates the battle.
         int battlefieldNumber = 1;
         for (Battlefield battlefield : battlefields) {
             System.out.println("\nBattlefield " + battlefieldNumber + " " + battlefield);
