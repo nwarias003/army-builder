@@ -425,7 +425,7 @@ public class Main {
         // Get list of units from codex.
         List<Unit> units = codex.getUnits();
         
-        // Randomly select 6 units for each army.
+        // Randomly select 6 units for each army without overlapping.
         Set<Integer> selectedIndices = new HashSet<>();
         Random random = new Random();
 
