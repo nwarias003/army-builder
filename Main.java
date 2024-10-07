@@ -10,7 +10,7 @@
  * to store all available units, where each unit is assigned specific attributes for comparison 
  * during the optimization process. Then, the program initializes two Army objects, representing
  * two opposing armies (Army A and Army B), which will hold the units selected for each army. 
- * Next the program calls the addUnit method to  insert six random units from the codex into each 
+ * Next the program calls the addUnit method to insert six random units from the codex into each 
  * army. After inserting the units into both armies, the program outputs the current army compositions,
  * including their total points and effectiveness. The program then employs dynamic programming 
  * utilizing the ArmyOptimizer class to optimize each army within a predefined point budget. The optimizer
